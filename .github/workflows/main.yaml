@@ -1,0 +1,52 @@
+# name: Lambda Deployment
+
+# on: 
+#   push:
+#     branches:
+#       - master
+
+# jobs:
+#   lambda_deployment:
+#     runs-on: self-hosted
+
+#     steps:
+#         - name: Checkout repository
+#           uses: actions/checkout@v2
+
+#         - name: Deploy helloworld
+#           run: |
+#             cd lambda_function
+#             zip -r lambda_package.zip ./*
+#             cd ..
+          
+#         - name: Upload to S3
+#           run: |
+#             aws s3 cp lambda_package.zip s3://bted-aws-infra/lambda_package.zip
+
+#         - name: Update Lambda lambda_function
+#           run: |
+#             aws lambda update-function-code --function-name 
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Upload to Amazon S3
+    runs-on: ubuntu-latest
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Configure AWS credentials from Test account
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::849340316486:role/lambda-deploy-github
+        aws-region: us-west-1
+    - name: Copy files to the test website with the AWS CLI
+      run: |
+        aws s3api list-buckets
