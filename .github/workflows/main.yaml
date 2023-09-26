@@ -14,7 +14,7 @@ jobs:
     # if:  contains(github.event.head_commit.modified, 'lambda_function/hello_world')
     steps:
     - name: print
-      run: echo "${{toJson(github.event.head_commit.modified)}}""
+      run: echo "${{ toJson(github.event.head_commit.modified) }}""
         # - name: Checkout repository
         #   uses: actions/checkout@v2
 
