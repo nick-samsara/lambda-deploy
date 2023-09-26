@@ -13,7 +13,6 @@ jobs:
           uses: actions/checkout@v2
 
         - name: Deploy hello_earth
-          if: contains(github.event.head_commit.modified, 'lambda_function/hello_earth')
           run: |
             cd lambda_function/hello_earth
             zip -r hello_earth.zip ./*
