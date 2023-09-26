@@ -5,9 +5,9 @@ on:
     branches:
       - master
       - main
-    paths:
-      - 'lambda_function/hello_earth/**'
-      - 'lambda_function/hello_world/**'
+    # paths:
+    #   - 'lambda_function/hello_earth/**'
+    #   - 'lambda_function/hello_world/**'
 jobs:
   hello_world_deployment:
     runs-on: self-hosted
