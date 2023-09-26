@@ -11,17 +11,19 @@ on:
 jobs:
   hello_world_deployment:
     runs-on: self-hosted
-    if:  contains(github.event.head_commit.modified, 'lambda_function/hello_world')
+    # if:  contains(github.event.head_commit.modified, 'lambda_function/hello_world')
     steps:
-        - name: Checkout repository
-          uses: actions/checkout@v2
+    - name: print
+      run: echo "${{toJson(github.event.head_commit.modified)}}""
+        # - name: Checkout repository
+        #   uses: actions/checkout@v2
 
-        - name: Deploy hello_world
-          run: 
-            cd lambda_function/hello_world
-            zip -r hello_world.zip ./*
-            aws s3 cp hello_world.zip s3://bted-lambda-deploy-cicd/hello_world.zip
-            aws lambda update-function-code --function-name demo --s3-bucket bted-lambda-deploy-cicd --s3-key hello_world.zip
+        # - name: Deploy hello_world
+        #   run: 
+        #     cd lambda_function/hello_world
+        #     zip -r hello_world.zip ./*
+        #     aws s3 cp hello_world.zip s3://bted-lambda-deploy-cicd/hello_world.zip
+        #     aws lambda update-function-code --function-name demo --s3-bucket bted-lambda-deploy-cicd --s3-key hello_world.zip
   
   hello_earth_deployment:
     runs-on: self-hosted
