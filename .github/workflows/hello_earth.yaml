@@ -1,10 +1,13 @@
 name: Lambda Deployment
+
 on: 
   push:
     branches:
       - main
     paths:
       - 'lambda_function/hello_earth/**'
+      - 'layers/**'
+
 jobs:
   hello_earth_deployment:
     runs-on: self-hosted
@@ -12,9 +15,31 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v2
 
+        # Install dependencies and prepare Lambda layer
+        - name: Prepare lambda layer
+          run: |
+            cd layers/
+            pip install -r requirements.txt -t python/lib/python3.10/site-packages/
+            zip -r common_layer.zip python/
+
+        # Deploy Lambda layer
+        - name: Deploy lambda layer
+          run: |
+            aws s3 cp layers/common_layer.zip s3://bted-lambda-deploy-cicd/common_layer.zip
+            LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name common_layer --content S3Bucket=bted-lambda-deploy-cicd,S3Key=common_layer.zip --query LayerVersionArn --output text)
+            echo "LAYER_VERSION_ARN=$LAYER_VERSION_ARN" >> $GITHUB_ENV
+
+        # Deploy Lambda function
         - name: Deploy hello_earth
           run: |
-            cd lambda_function/hello_earth
+            cd lambda_function/hello_earth/
             zip -r hello_earth.zip ./*
             aws s3 cp hello_earth.zip s3://bted-lambda-deploy-cicd/hello_earth.zip
-            aws lambda update-function-code --function-name demo2 --s3-bucket bted-lambda-deploy-cicd --s3-key hello_earth.zip
+            aws lambda update-function-code --function-name demo2 --s3-bucket bted-lambda-deploy-cicd --s3-key hello_earth.zip  --publish
+            sleep 30
+            aws lambda update-function-configuration --function-name demo2 --layers $LAYER_VERSION_ARN
+        # Update Lambda environment variables
+        - name: Update environment variables
+          run: |
+            sleep 30
+            aws lambda update-function-configuration --function-name demo2 --environment "Variables={MY_VAR=value, ANOTHER_VAR=another_value}"
